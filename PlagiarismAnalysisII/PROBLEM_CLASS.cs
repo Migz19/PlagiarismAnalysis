@@ -6,165 +6,104 @@ namespace Problem
 {
     public static class PROBLEM_CLASS
     {
+
+        private static Dictionary<string, List<(string, float)>> adjacencyList = new Dictionary<string, List<(string, float)>>();
+
         public static void RequiredFunction(Tuple<string, string, float>[] edges, ref float maxAvgScore, ref List<string> IDs)
         {
-            Array.Sort(edges, (x, y) => y.Item3.CompareTo(x.Item3));
-            float maxSum = 0f;
-            int count = 0;
+            
+            adjacencyList = new Dictionary<string, List<(string, float)>>();
+            // Build the graph
+            foreach (var edge in edges)
+{
+AddEdge(edge.Item1, edge.Item2, edge.Item3);
+}
 
-            float maxScore = 0f;
+// Find connected components
+List<List<string>> connectedComponents = FindConnectedComponents();
 
-            Tuple<string, string, float> currentEdge = edges[0];
-            Dictionary<float, List<Tuple<string, string, float>>> neighbors =
-                new Dictionary<float, List<Tuple<string, string, float>>>();
+float maxAverageScore = float.MinValue;
+List<string> maxAvgScoreIDs = new List<string>();
 
-            List<Tuple<string, string, float>> edgesList =
-                new List<Tuple<string, string, float>>();
-            HashSet<string> visited = new HashSet<string>();
-            edgesList.Add(currentEdge);
-            maxSum += currentEdge.Item3;
-            count = 1;
-            visited.Add(currentEdge.Item1);
-            visited.Add(currentEdge.Item2);
-         
-            for (int i = 1; i < edges.Length; i++)
-            {
-                Console.WriteLine(edges[i]);
-                if (visited.Contains(edges[i].Item1)||visited.Contains(edges[i].Item2))
-                {
-                    maxSum += edges[i].Item3;
-                    currentEdge = edges[i];
-                    count++;
-                    edgesList.Add(edges[i]);
-                }
-                else
-                {
-                    maxScore = maxSum / count;
-                    List<Tuple<string, string, float>> newList = new List<Tuple<string, string, float>>();
+// Iterate through each connected component to find the one with the maximum average score
+foreach (var connectedComponent in connectedComponents)
+{
+float componentSum = 0f;
+int componentCount = 0;
 
-                    foreach (var edge in edgesList)
-                    {
-                        newList.Add(edge);
-                    }
-
-                    neighbors[maxScore]=newList;
-                    Console.WriteLine(" sum --> " + maxSum + " count --> " + count + " score --> " + maxScore);
-                    maxSum = 0;
-                    maxScore = 0;
-                    count = 1;
-                    edgesList = new List<Tuple<string, string, float>>();
-                    visited.Add(edges[i].Item1);
-                    visited.Add(edges[i].Item2);
-                    maxSum += currentEdge.Item3;
-                    edgesList.Add(currentEdge);
-                }
-                currentEdge = edges[i];
-            }
-            if (count <= 2)
-            {
-                maxScore=maxSum / count;
-                neighbors[maxScore] = edgesList;
-            }
-          
-            KeyValuePair<float, List<Tuple<string, string, float>>> maxKeyValuePair =
-            neighbors.OrderByDescending(kv => kv.Key)
-                     .First();
-
-            List<string> idsList = new List<string>();
-            foreach (var edge in maxKeyValuePair.Value)
-            {
-               
-             
-                    idsList.Add(edge.Item1);
-              
-                    idsList.Add(edge.Item2);
-
-            }
-            IDs= idsList.OrderBy(id => id).ToList();
-            IDs = IDs.Distinct().ToList();
-            maxAvgScore = maxKeyValuePair.Key;
-
-
-            /*
-             Dictionary<string, List<Tuple<string, float>>> neighbors = new Dictionary<string, List<Tuple<string, float>>>();
-             HashSet<string> allNodes = new HashSet<string>();
-
-             // Populate neighbors dictionary and collect all unique nodes
-             foreach (var edge in edges)
-             {
-                 string ID1 = edge.Item1;
-                 string ID2 = edge.Item2;
-                 float score = edge.Item3;
-
-                 allNodes.Add(ID1);
-                 allNodes.Add(ID2);
-
-                 if (!neighbors.ContainsKey(ID1))
-                 {
-                     neighbors[ID1] = new List<Tuple<string, float>>();
-                 }
-                 neighbors[ID1].Add(new Tuple<string, float>(ID2, score));
-
-                 if (!neighbors.ContainsKey(ID2))
-                 {
-                     neighbors[ID2] = new List<Tuple<string, float>>();
-                 }
-                 neighbors[ID2].Add(new Tuple<string, float>(ID1, score));
-             }
-
-             maxAvgScore = float.MinValue;
-             List<string> maxScoreCommunity = new List<string>();
-
-             foreach (var startID in allNodes)
-             {
-                 if (neighbors.ContainsKey(startID))
-                 {
-                     HashSet<string> visited = new HashSet<string>();
-                     Queue<string> queue = new Queue<string>();
-                     queue.Enqueue(startID);
-                     visited.Add(startID);
-
-                     float communitySum = 0;
-                     int communityCount = 0;
-
-                     while (queue.Count > 0)
-                     {
-                         string currentID = queue.Dequeue();
-                         communitySum += neighbors[currentID].Sum(n => n.Item2);
-                         communityCount += neighbors[currentID].Count;
-
-                         foreach (var neighbor in neighbors[currentID])
-                         {
-                             if (!visited.Contains(neighbor.Item1))
-                             {
-                                 visited.Add(neighbor.Item1);
-                                 queue.Enqueue(neighbor.Item1);
-                             }
-                         }
-                     }
-
-                     // Calculate average score for the community
-                     float avgScore = communityCount > 0 ? communitySum / communityCount : 0;
-
-                     if (avgScore > maxAvgScore)
-                     {
-                         maxAvgScore = avgScore;
-                         maxScoreCommunity.Clear();
-                         maxScoreCommunity.Add(startID);
-                     }
-                     else if (avgScore == maxAvgScore)
-                     {
-                         maxScoreCommunity.Add(startID);
-                     }
-                 }
-             }
-
-             IDs = maxScoreCommunity.OrderBy(id => id).ToList();
-
-
-
-             */
+// Calculate the total score and count of vertices in the connected component
+foreach (var vertex in connectedComponent)
+{
+    if (adjacencyList.ContainsKey(vertex))
+    {
+        foreach ((string neighbor, float weight) in adjacencyList[vertex])
+        {
+            componentSum += weight;
+            componentCount++;
         }
-
     }
 }
+
+// Calculate the average score for the connected component
+float componentAvgScore = componentCount > 0 ? componentSum / componentCount : 0f;
+
+// Update the maximum average score and corresponding IDs if necessary
+if (componentAvgScore > maxAverageScore)
+{
+    maxAverageScore = componentAvgScore;
+    maxAvgScoreIDs = connectedComponent.ToList();
+}
+}
+
+// Assign the maximum average score and IDs to the output parameters
+maxAvgScore = maxAverageScore;
+IDs = maxAvgScoreIDs;
+}
+
+public static void AddEdge(string u, string v, float weight)
+{
+if (!adjacencyList.ContainsKey(u))
+adjacencyList[u] = new List<(string, float)>();
+
+if (!adjacencyList.ContainsKey(v))
+adjacencyList[v] = new List<(string, float)>();
+
+adjacencyList[u].Add((v, weight));
+adjacencyList[v].Add((u, weight)); // Assuming undirected graph
+}
+
+private static void DFS(string vertex, Dictionary<string, bool> visited, List<string> component)
+{
+visited[vertex] = true;
+component.Add(vertex);
+
+if (adjacencyList.ContainsKey(vertex))
+{
+foreach ((string neighbor, float weight) in adjacencyList[vertex])
+{
+    if (!visited.ContainsKey(neighbor) || !visited[neighbor])
+    {
+        DFS(neighbor, visited, component);
+    }
+}
+}
+}
+
+        public static List<List<string>> FindConnectedComponents()
+        {
+            Dictionary<string, bool> visited = new Dictionary<string, bool>();
+            List<List<string>> connectedComponents = new List<List<string>>();
+
+            foreach (var vertex in adjacencyList.Keys)
+            {
+                if (!visited.ContainsKey(vertex) || !visited[vertex])
+                {
+                    List<string> component = new List<string>();
+                    DFS(vertex, visited, component);
+                    connectedComponents.Add(component);
+                }
+            }
+
+            return connectedComponents;
+        }
+    }}
