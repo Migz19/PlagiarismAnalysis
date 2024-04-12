@@ -13,25 +13,24 @@ namespace Problem
         {
             
             adjacencyList = new Dictionary<string, List<(string, float)>>();
-            // Build the graph
+          
             foreach (var edge in edges)
 {
 AddEdge(edge.Item1, edge.Item2, edge.Item3);
 }
 
-// Find connected components
+
 List<List<string>> connectedComponents = FindConnectedComponents();
 
 float maxAverageScore = float.MinValue;
 List<string> maxAvgScoreIDs = new List<string>();
 
-// Iterate through each connected component to find the one with the maximum average score
 foreach (var connectedComponent in connectedComponents)
 {
 float componentSum = 0f;
 int componentCount = 0;
 
-// Calculate the total score and count of vertices in the connected component
+
 foreach (var vertex in connectedComponent)
 {
     if (adjacencyList.ContainsKey(vertex))
@@ -44,10 +43,9 @@ foreach (var vertex in connectedComponent)
     }
 }
 
-// Calculate the average score for the connected component
 float componentAvgScore = componentCount > 0 ? componentSum / componentCount : 0f;
 
-// Update the maximum average score and corresponding IDs if necessary
+
 if (componentAvgScore > maxAverageScore)
 {
     maxAverageScore = componentAvgScore;
@@ -55,7 +53,7 @@ if (componentAvgScore > maxAverageScore)
 }
 }
 
-// Assign the maximum average score and IDs to the output parameters
+
 maxAvgScore = maxAverageScore;
 IDs = maxAvgScoreIDs;
 }
